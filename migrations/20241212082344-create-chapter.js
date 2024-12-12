@@ -2,12 +2,16 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Articles', {
+    await queryInterface.createTable('Chapters', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER.UNSIGNED,
+      },
+      courseId: {
+        type: Sequelize.INTEGER.UNSIGNED,
+        allowNull: false,
       },
       title: {
         type: Sequelize.STRING,
@@ -15,6 +19,14 @@ module.exports = {
       },
       content: {
         type: Sequelize.TEXT,
+      },
+      video: {
+        type: Sequelize.STRING,
+      },
+      rank: {
+        type: Sequelize.INTEGER.UNSIGNED,
+        allowNull: false,
+        defaultValue: 1,
       },
       createdAt: {
         allowNull: false,
@@ -24,12 +36,13 @@ module.exports = {
         allowNull: false,
         type: Sequelize.DATE,
       },
-      deletedAt: {
-        type: Sequelize.DATE,
-      },
+    });
+    await queryInterface.addIndex('Chapters', {
+      fields: ['courseId'],
+      indexName: 'idx_chapters_course_id',
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Articles');
+    await queryInterface.dropTable('Chapters');
   },
 };

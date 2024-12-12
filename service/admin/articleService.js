@@ -4,19 +4,21 @@ const { Article } = require('../../models');
 const articleAttributes = [];
 
 // 获取文章列表
-exports.getArticleList = async (page = 1, pageSize = 10) => {
-  const data = await Article.findAll({
-    offset: (page - 1) * pageSize,
-    limit: pageSize,
-    order: [['id', 'asc']],
-  });
-  return data;
+exports.getArticleList = async (params, page, pageSize) => {
+  const { count, rows } = await Article.findAndCountAll(params);
+  return {
+    data: rows,
+    pagination: {
+      total: count,
+      page,
+      pageSize,
+    },
+  };
 };
 
 // 获取文章详情
 exports.getArticleDetail = async (id) => {
   const data = await Article.findByPk(id);
-  console.log(data);
   return data;
 };
 
@@ -28,8 +30,8 @@ exports.createArticle = async (data) => {
 
 // 更新文章
 exports.updateArticle = async (id, data) => {
-  const article = await Article.update(data, { where: { id } });
-  return article;
+  const [affectedCount] = await Article.update(data, { where: { id } });
+  return affectedCount;
 };
 
 // 删除文章
