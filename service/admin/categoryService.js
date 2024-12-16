@@ -1,8 +1,5 @@
 const { Category } = require('../../models');
 
-// 不需要返回的数据
-const categoryAttributes = [];
-
 // 获取分类列表
 exports.getCategoryList = async (params, page, pageSize) => {
   const { count, rows } = await Category.findAndCountAll(params);

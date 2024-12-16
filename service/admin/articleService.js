@@ -1,8 +1,5 @@
 const { Article } = require('../../models');
 
-// 不需要返回的数据
-const articleAttributes = [];
-
 // 获取文章列表
 exports.getArticleList = async (params, page, pageSize) => {
   const { count, rows } = await Article.findAndCountAll(params);
