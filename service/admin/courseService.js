@@ -14,8 +14,8 @@ exports.getCourseList = async (params, page, pageSize) => {
 };
 
 // 获取课程详情
-exports.getCourseDetail = async (id) => {
-  const data = await Course.findByPk(id);
+exports.getCourseDetail = async (id, condition) => {
+  const data = await Course.findByPk(id, condition);
   return data;
 };
 

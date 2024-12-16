@@ -8,6 +8,7 @@ const {
   updateCategory,
   deleteCategory,
 } = require('../../service/admin/categoryService');
+const { Course } = require('../../models');
 
 // 获取分类列表
 exports.getCategoryList = async (req, res) => {
@@ -23,6 +24,7 @@ exports.getCategoryList = async (req, res) => {
     const params = {
       offset: Math.abs((page - 1) * pageSize),
       limit: Math.abs(pageSize),
+      ...getCondition(),
       order: [[sort, order]],
       where: {
         name: { [Op.like]: `%${name}%` },
@@ -32,7 +34,7 @@ exports.getCategoryList = async (req, res) => {
     const { data, pagination } = await getCategoryList(params, page, pageSize);
     res.success({ data, pagination }, '获取分类列表成功');
   } catch (error) {
-    console.log(error);
+    console.error('获取分类列表失败:', error);
     res.error('获取分类列表失败');
   }
 };
@@ -41,13 +43,13 @@ exports.getCategoryList = async (req, res) => {
 exports.getCategoryDetail = async (req, res) => {
   try {
     const { id } = req.params;
-    const data = await getCategoryDetail(id);
+    const data = await getCategoryDetail(id, getCondition());
     if (!data) {
       return res.error('分类不存在', 404);
     }
     res.success({ data }, '获取分类详情成功');
   } catch (error) {
-    console.log(error);
+    console.error('获取分类详情失败:', error);
     res.error('获取分类详情失败');
   }
 };
@@ -59,7 +61,7 @@ exports.createCategory = async (req, res) => {
     const data = await createCategory({ name, rank });
     res.success({ data }, '创建分类成功', 201);
   } catch (error) {
-    console.log(error);
+    console.error('创建分类失败:', error);
     res.error('创建分类失败');
   }
 };
@@ -77,7 +79,7 @@ exports.updateCategory = async (req, res) => {
     const data = await updateCategory(id, { name, rank });
     res.success({ data }, '更新分类成功');
   } catch (error) {
-    console.log(error);
+    console.error('更新分类失败:', error);
     res.error('更新分类失败');
   }
 };
@@ -91,10 +93,27 @@ exports.deleteCategory = async (req, res) => {
     if (!category) {
       return res.error('分类不存在', 404);
     }
+    // 判断分类下是否有课程
+    const courses = await Course.findAll({ where: { categoryId: id } });
+    if (courses.length > 0) {
+      return res.error('分类下有课程，无法删除', 400);
+    }
     const data = await deleteCategory(id);
     res.success({ data }, '删除分类成功');
   } catch (error) {
-    console.log(error);
+    console.error('删除分类失败:', error);
     res.error('删除分类失败');
   }
 };
+
+// 获取参数
+function getCondition() {
+  return {
+    include: [
+      {
+        model: Course,
+        as: 'courses',
+      },
+    ],
+  };
+}

@@ -11,6 +11,10 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      models.Chapter.belongsTo(models.Course, {
+        foreignKey: 'courseId',
+        as: 'course',
+      });
     }
   }
   Chapter.init({

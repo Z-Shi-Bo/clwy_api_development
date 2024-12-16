@@ -13,4 +13,10 @@ router.use('/admin/settings', require('./admin/settingRoute'));
 // 用户接口
 router.use('/admin/users', require('./admin/userRoute'));
 
+// 课程接口
+router.use('/admin/courses', require('./admin/courseRoute'));
+
+// 章节接口
+router.use('/admin/chapters', require('./admin/chapterRoute'));
+
 module.exports = router;

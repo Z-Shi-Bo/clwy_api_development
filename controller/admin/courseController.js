@@ -8,6 +8,7 @@ const {
   updateCourse,
   deleteCourse,
 } = require('../../service/admin/courseService');
+const { User, Category, Chapter } = require('../../models');
 
 // 获取课程列表
 exports.getCourseList = async (req, res) => {
@@ -15,24 +16,34 @@ exports.getCourseList = async (req, res) => {
     const {
       page = 1,
       pageSize = 10,
-      title = '',
-      content = '',
+      categoryId = '',
+      userId = '',
+      name = '',
+      recommended = '',
+      introductory = '',
       sort = 'id',
       order = 'asc',
     } = req.query;
+    const whereConditions = {
+      ...(categoryId && { categoryId: { [Op.eq]: categoryId } }),
+      ...(userId && { userId: { [Op.eq]: userId } }),
+      ...(name && { name: { [Op.like]: `%${name}%` } }),
+      ...(recommended && { recommended: { [Op.eq]: recommended === 'true' } }),
+      ...(introductory && {
+        introductory: { [Op.eq]: introductory === 'true' },
+      }),
+    };
     const params = {
       offset: Math.abs((page - 1) * pageSize),
       limit: Math.abs(pageSize),
+      ...getCondition(),
       order: [[sort, order]],
-      where: {
-        title: { [Op.like]: `%${title}%` },
-        content: { [Op.like]: `%${content}%` },
-      },
+      where: whereConditions,
     };
     const { data, pagination } = await getCourseList(params, page, pageSize);
     res.success({ data, pagination }, '获取课程列表成功');
   } catch (error) {
-    console.log(error);
+    console.error('获取课程列表失败:', error);
     res.error('获取课程列表失败');
   }
 };
@@ -41,13 +52,13 @@ exports.getCourseList = async (req, res) => {
 exports.getCourseDetail = async (req, res) => {
   try {
     const { id } = req.params;
-    const data = await getCourseDetail(id);
+    const data = await getCourseDetail(id, getCondition());
     if (!data) {
       return res.error('课程不存在', 404);
     }
     res.success({ data }, '获取课程详情成功');
   } catch (error) {
-    console.log(error);
+    console.error('获取课程详情失败:', error);
     res.error('获取课程详情失败');
   }
 };
@@ -55,11 +66,10 @@ exports.getCourseDetail = async (req, res) => {
 // 创建课程
 exports.createCourse = async (req, res) => {
   try {
-    const { title, content } = req.body;
-    const data = await createCourse({ title, content });
+    const data = await createCourse(getBody(req));
     res.success({ data }, '创建课程成功', 201);
   } catch (error) {
-    console.log(error);
+    console.error('创建课程失败:', error);
     res.error('创建课程失败');
   }
 };
@@ -68,11 +78,10 @@ exports.createCourse = async (req, res) => {
 exports.updateCourse = async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, content } = req.body;
-    const data = await updateCourse(id, { title, content });
+    const data = await updateCourse(id, getBody(req));
     res.success({ data }, '更新课程成功');
   } catch (error) {
-    console.log(error);
+    console.error('更新课程失败:', error);
     res.error('更新课程失败');
   }
 };
@@ -81,10 +90,48 @@ exports.updateCourse = async (req, res) => {
 exports.deleteCourse = async (req, res) => {
   try {
     const { id } = req.params;
+    // 删除课程时判断是否有关联的章节
+    const chapter = await Chapter.findOne({ where: { courseId: id } });
+    if (chapter) {
+      return res.error('课程有关联的章节，不能删除', 400);
+    }
     const data = await deleteCourse(id);
     res.success({ data }, '删除课程成功');
   } catch (error) {
-    console.log(error);
+    console.error('删除课程失败:', error);
     res.error('删除课程失败');
   }
 };
+
+// 获取条件
+function getCondition() {
+  return {
+    attributes: {
+      exclude: ['userId', 'categoryId'],
+    },
+    include: [
+      {
+        model: Category,
+        attributes: ['id', 'name'],
+        as: 'category',
+      },
+      {
+        model: User,
+        attributes: ['id', 'username', 'avatar'],
+        as: 'user',
+      },
+    ],
+  };
+}
+
+// 参数过滤
+function getBody(req) {
+  const { categoryId, userId, name, recommended, introductory } = req.body;
+  return {
+    categoryId,
+    userId,
+    name,
+    recommended,
+    introductory,
+  };
+}
