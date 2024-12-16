@@ -19,4 +19,7 @@ router.use('/admin/courses', require('./admin/courseRoute'));
 // 章节接口
 router.use('/admin/chapters', require('./admin/chapterRoute'));
 
+// 图表接口
+router.use('/admin/charts', require('./admin/chartRoute'));
+
 module.exports = router;
