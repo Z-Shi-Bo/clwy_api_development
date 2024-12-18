@@ -13,7 +13,6 @@ const checkCourseExists = async (value) => {
 // 创建课程验证
 exports.createCourseValidate = validate([
   body('categoryId').notEmpty().withMessage('分类ID不能为空'),
-  body('userId').notEmpty().withMessage('用户ID不能为空'),
   body('name').notEmpty().withMessage('课程名称不能为空'),
   body('recommended').notEmpty().withMessage('是否推荐不能为空'),
   body('introductory').notEmpty().withMessage('是否为入门课程不能为空'),
@@ -32,7 +31,6 @@ exports.updateCourseValidate = validate([
   param('id').isInt().withMessage('ID必须是整数'),
   param('id').custom(checkCourseExists),
   body('categoryId').notEmpty().withMessage('分类ID不能为空'),
-  body('userId').notEmpty().withMessage('用户ID不能为空'),
   body('name').notEmpty().withMessage('课程名称不能为空'),
   body('recommended').notEmpty().withMessage('是否推荐不能为空'),
   body('introductory').notEmpty().withMessage('是否为入门课程不能为空'),

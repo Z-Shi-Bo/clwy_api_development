@@ -66,7 +66,10 @@ exports.getCourseDetail = async (req, res) => {
 // 创建课程
 exports.createCourse = async (req, res) => {
   try {
-    const data = await createCourse(getBody(req));
+    const data = await createCourse({
+      ...getBody(req),
+      userId: req.user.id,
+    });
     res.success({ data }, '创建课程成功', 201);
   } catch (error) {
     console.error('创建课程失败:', error);
@@ -78,7 +81,10 @@ exports.createCourse = async (req, res) => {
 exports.updateCourse = async (req, res) => {
   try {
     const { id } = req.params;
-    const data = await updateCourse(id, getBody(req));
+    const data = await updateCourse(id, {
+      ...getBody(req),
+      userId: req.user.id,
+    });
     res.success({ data }, '更新课程成功');
   } catch (error) {
     console.error('更新课程失败:', error);
@@ -126,10 +132,9 @@ function getCondition() {
 
 // 参数过滤
 function getBody(req) {
-  const { categoryId, userId, name, recommended, introductory } = req.body;
+  const { categoryId, name, recommended, introductory } = req.body;
   return {
     categoryId,
-    userId,
     name,
     recommended,
     introductory,

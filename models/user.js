@@ -13,6 +13,11 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'userId',
         as: 'courses',
       });
+      models.User.belongsToMany(models.Course, {
+        through: models.Like,
+        foreignKey: 'userId',
+        as: 'likeCourses',
+      });
     }
   }
   User.init(
